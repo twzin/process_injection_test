@@ -119,7 +119,6 @@ int main(int argc, char* argv[]) {
 	CloseHandle(hProcess);
 	printf("%s Finished! See you next time :)\n", k);
 
-
 	return EXIT_SUCCESS;
 
 }
